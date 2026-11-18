@@ -38,6 +38,8 @@ Les images ne sont pas redistribuées ici (voir [`data/README.md`](data/README.m
    - Partition : 70 % entraînement, 30 % partagés entre validation et test.
 4. **Interface** (`app/`). Une application Streamlit charge les poids sauvegardés, reçoit une image et affiche la classe prédite.
 
+Le code du CNN séquentiel (notebooks 03 et 04, `app/model_train.py`) est adapté d'un notebook public publié sur Kaggle, puis modifié pour ce projet : jeux de données, métriques, sauvegarde du modèle et interface.
+
 ## Résultats
 
 | Modèle | Jeu de données | Exactitude (entraînement) | Exactitude (validation) | Exactitude (test) |
@@ -119,6 +121,7 @@ Course project for **MAP6014** (Université du Québec à Trois-Rivières, Fall 
 
 - **Approach:** transfer learning with a frozen **VGG16** backbone (100,356 trainable parameters) versus a **sequential CNN trained from scratch** (3 Conv2D blocks, 16.9M parameters, called "AUTOTUNE" in the report), on Indian and Brazilian coin images. Class imbalance was handled with Albumentations data augmentation.
 - **Results:** the sequential CNN reaches **98.1% test accuracy** on the 5-class *Indian coins + fake coins* dataset (1,783 images), and 56.3% on the 4-class *Indian coins* dataset. VGG16 reaches 73.7% validation accuracy on *Indian coins*.
+- **Credit:** the sequential CNN code is adapted from a public Kaggle notebook.
 - **Deployment:** a **Streamlit** app loads the trained model and classifies an uploaded image. The 194 MB weight file is published as a GitHub Release asset.
 - **Known issues:** the project is shown as submitted. A post-hoc code review found some issues: the VGG16 test evaluation used a shuffled generator, so its confusion matrix and 20.6% test accuracy compare misaligned labels. The validation and test splits of the sequential CNN may overlap. The 10-rupee augmentation was done before splitting. They are listed in *Écarts relevés*.
 
