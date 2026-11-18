@@ -1,6 +1,6 @@
 # Classification de pièces de monnaie par réseaux de neurones convolutifs
 
-Projet de session du cours **MAP6014 — Reconnaissance de formes et apprentissage machine**, Université du Québec à Trois-Rivières, automne 2023.
+Projet de session du cours **MAP6014** (Université du Québec à Trois-Rivières, automne 2023), consacré aux applications du traitement et de l'analyse des données : reconnaissance de formes et apprentissage machine.
 
 *English summary below.*
 
@@ -115,7 +115,7 @@ Projet réalisé dans le cadre du cours MAP6014, sous la supervision du professe
 
 ## English summary
 
-Course project for **MAP6014 — Pattern Recognition and Machine Learning** (Université du Québec à Trois-Rivières, Fall 2023): image-based coin classification with convolutional neural networks.
+Course project for **MAP6014** (Université du Québec à Trois-Rivières, Fall 2023; theme: pattern recognition and machine learning): image-based coin classification with convolutional neural networks.
 
 - **Approach:** transfer learning with a frozen **VGG16** backbone (100,356 trainable parameters) versus a **sequential CNN trained from scratch** (3 Conv2D blocks, 16.9M parameters, called "AUTOTUNE" in the report), on Indian and Brazilian coin images. Class imbalance was handled with Albumentations data augmentation.
 - **Results:** the sequential CNN reaches **98.1% test accuracy** on the 5-class *Indian coins + fake coins* dataset (1,783 images), and 56.3% on the 4-class *Indian coins* dataset. VGG16 reaches 73.7% validation accuracy on *Indian coins*.
