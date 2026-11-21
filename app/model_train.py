@@ -9,7 +9,6 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 from tensorflow.keras.metrics import categorical_accuracy, AUC, Precision
-from tensorflow_addons.metrics import F1Score
 from PIL import Image
 import numpy as np
 
@@ -57,7 +56,7 @@ def model_predict_image(image_file_path, filename='model.h5'):
         layers.Dense(units=5, activation="softmax"),
     ])
     recall = keras.metrics.Recall(name='recall')
-    f1_score = F1Score(num_classes=5)
+    f1_score = keras.metrics.F1Score(name='f1_score')  # remplace tensorflow_addons.metrics.F1Score (2026)
 
     METRICS = keras.metrics.Precision(name='precision')
     model.compile(
@@ -67,6 +66,7 @@ def model_predict_image(image_file_path, filename='model.h5'):
     )
     image = Image.open(image_file_path)
     image = image.convert('L') # Convert image to grayscale
+    image = image.resize((256, 256))  # taille attendue par le modèle (ajout 2026)
     image_array = np.asarray(image) # convert PIL image to np.ndarray
 
     # image_array has a shape of (256,256) but the prediction method of NN model requires an input
@@ -77,7 +77,7 @@ def model_predict_image(image_file_path, filename='model.h5'):
     # So we have to add an extra dimention at the begining and end of image_array
     image_array = image_array[np.newaxis, :, :, np.newaxis]
 
-    model.load_weights('model.h5')
+    model.load_weights(os.path.join(os.path.dirname(os.path.abspath(__file__)), filename))  # à côté du script (2026)
 
     preditcion = model.predict(image_array)
     predicted_class = np.argmax(preditcion)

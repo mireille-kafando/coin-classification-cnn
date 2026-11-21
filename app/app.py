@@ -7,7 +7,6 @@ from matplotlib import gridspec
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from tensorflow_addons.metrics import F1Score
 from model_train import *
 
 
@@ -34,7 +33,7 @@ def load_model():
       layers.Dense(units=5, activation="softmax"),
   ])
   recall = keras.metrics.Recall(name='recall')
-  f1_score = F1Score(num_classes=5)
+  f1_score = keras.metrics.F1Score(name='f1_score')  # remplace tensorflow_addons.metrics.F1Score (2026)
 
   METRICS = keras.metrics.Precision(name='precision')
   model.compile(
@@ -42,7 +41,7 @@ def load_model():
       loss='categorical_crossentropy',
       metrics=['accuracy',recall,f1_score,METRICS]
   )
-  model.load_weights('model.h5')
+  model.load_weights(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'model.h5'))  # à côté du script (2026)
   return model
 
 class Predict:    
@@ -55,7 +54,7 @@ class Predict:
     def get_image_from_upload():
         uploaded_file = st.file_uploader("Upload Files",type=['png','jpeg', 'jpg'])
         if uploaded_file is not None:
-            st.image(uploaded_file, caption="Image téléchargée", use_column_width=True)
+            st.image(uploaded_file, caption="Image téléchargée", use_container_width=True)
             if st.button('Classify'):
                 predictions=model_predict_image(uploaded_file)
                 st.write(f'**Prediction**: {predictions}')

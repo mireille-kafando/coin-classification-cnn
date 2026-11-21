@@ -46,7 +46,7 @@ Le code du CNN séquentiel (notebooks 03 et 04, `app/model_train.py`) est adapt�
 |---|---|---|---|---|
 | CNN séquentiel | Indian coins + fake coins (5 classes) | 100 % | 98,9 % | **98,1 %** |
 | CNN séquentiel | Indian coins (4 classes) | 80,2 % | 55,2 % | 56,3 % |
-| VGG16 (transfert) | Indian coins (4 classes) | ≈ 86 % | 73,7 % | 20,6 % (voir *Écarts relevés*) |
+| VGG16 (transfert) | Indian coins (4 classes) | ≈ 86 % | 73,7 % | non mesurée : les 20,6 % du notebook ne sont pas valides (voir *Écarts relevés*) |
 
 Valeurs lues dans les sorties des notebooks. Le rapport final indique que les résultats obtenus avec VGG16 sur les pièces brésiliennes sont comparables à ceux obtenus sur les pièces indiennes. Ces essais n'ont pas été conservés dans les notebooks.
 
@@ -68,6 +68,8 @@ streamlit run app.py
 
 Le guide d'utilisation est dans [`docs/guide_utilisation_interface.pdf`](docs/guide_utilisation_interface.pdf).
 
+Depuis 2026, l'interface fonctionne avec les versions actuelles de TensorFlow (2.16 et suivantes) : la métrique F1 vient de Keras et non plus de `tensorflow-addons`, qui n'est plus maintenu. Le modèle est cherché à côté du script, et les images sont redimensionnées à 256 × 256 pixels. Testé avec TensorFlow 2.21 et le `model.h5` de la release.
+
 Le fichier de poids `model.h5` (194 Mo) dépasse la taille admise pour un fichier ordinaire sur GitHub. Il est publié en pièce jointe d'une *Release*.
 
 ## Organisation du dépôt
@@ -81,6 +83,8 @@ notebooks/
 app/
 ├── app.py                                           Interface Streamlit
 └── model_train.py                                   Reconstruction du modèle et prédiction
+scripts/
+└── vgg16_entrainement_evaluation.py                 VGG16 avec évaluation corrigée (2026)
 docs/
 ├── rapport_final_MAP6014.pdf
 ├── presentation_finale_MAP6014.pdf
@@ -95,13 +99,13 @@ Les notebooks sont présentés tels qu'ils ont été remis, avec leurs sorties d
 
 Le projet est présenté tel qu'il a été remis. Une relecture du code a mis en évidence les points suivants, rapportés ici par transparence.
 
-- **Évaluation de VGG16 sur le test.** Le générateur `test_set` est créé avec le mélange par défaut (`shuffle=True`). Les prédictions sont donc produites dans un ordre aléatoire, alors que les vraies étiquettes (`test_set.classes`) restent dans l'ordre des dossiers. La matrice de confusion et l'exactitude de 20,6 % comparent des étiquettes mal appariées et ne mesurent pas la performance réelle du modèle. L'exactitude de validation (73,7 %, obtenue avec `model.evaluate`) n'est pas concernée.
-- **Légende d'une figure.** La deuxième courbe de la cellule 40 du notebook 02 trace le rappel, mais sa légende indique « prec ».
+- **Évaluation de VGG16 sur le test.** Le générateur `test_set` est créé avec le mélange par défaut (`shuffle=True`). Les prédictions sont donc produites dans un ordre aléatoire, alors que les vraies étiquettes (`test_set.classes`) restent dans l'ordre des dossiers. La matrice de confusion et l'exactitude de 20,6 % comparent des étiquettes mal appariées et ne mesurent pas la performance réelle du modèle. L'exactitude de validation (73,7 %, obtenue avec `model.evaluate`) n'est pas concernée. **Correction (2026) :** le script [`scripts/vgg16_entrainement_evaluation.py`](scripts/vgg16_entrainement_evaluation.py) reprend le protocole du notebook avec un test non mélangé, une F1 de Keras et des poids sauvegardés. Les poids de VGG16 entraîné n'ayant pas été conservés, le score de test corrigé demande de relancer l'entraînement sur les images du projet. Il sera ajouté ici dès que les images auront été récupérées ; d'ici là, seule l'exactitude de validation (73,7 %) mesure VGG16.
+- **Légende d'une figure.** La deuxième courbe de la cellule 40 du notebook 02 trace le rappel, mais sa légende indique « prec ». Corrigé dans le script de 2026.
 - **Validation et test du CNN séquentiel.** Le jeu de test est obtenu en prenant la moitié des lots d'un jeu de validation mélangé (`shuffle=True`, puis `take`/`skip`). Avec `tf.data`, ce mélange est refait à chaque parcours, de sorte que les images de validation et de test peuvent se recouvrir d'une époque à l'autre.
 - **Augmentation avant la partition.** Les images augmentées de la classe 10 roupies sont enregistrées dans le même dossier que les originales, avant la partition. Une image et ses versions augmentées peuvent donc se retrouver dans des ensembles différents, ce qui peut rendre la validation et le test optimistes pour cette classe.
 - **Nom du modèle.** « AUTOTUNE » désigne dans le rapport le CNN séquentiel. Il s'agit en fait de la constante `tf.data.AUTOTUNE`, utilisée dans le notebook pour le préchargement des données, et non d'une architecture.
 - **Comparaison avec la littérature.** Le rapport compare les 98 % du CNN séquentiel aux résultats de l'article de référence, obtenus sur les pièces brésiliennes. Les deux chiffres portent sur des jeux de données différents.
-- **Interface.** Le modèle est reconstruit et ses poids rechargés à chaque prédiction. La classe `Predict` d'`app.py` n'est pas utilisée. L'interface dépend de `tensorflow-addons`, qui n'est plus maintenu : elle nécessite TensorFlow 2.15 au plus.
+- **Interface.** Le modèle est reconstruit et ses poids rechargés à chaque prédiction. La classe `Predict` d'`app.py` n'est pas utilisée. Dans la version remise, l'interface dépendait de `tensorflow-addons`, qui n'est plus maintenu, et nécessitait TensorFlow 2.15 au plus ; elle cherchait aussi le modèle dans le dossier courant et ne redimensionnait pas les images. Corrigé en 2026 (voir *Interface Streamlit*).
 
 ## Compétences mises en œuvre
 
@@ -122,7 +126,7 @@ Course project for **MAP6014** (Université du Québec à Trois-Rivières, Fall 
 - **Approach:** transfer learning with a frozen **VGG16** backbone (100,356 trainable parameters) versus a **sequential CNN trained from scratch** (3 Conv2D blocks, 16.9M parameters, called "AUTOTUNE" in the report), on Indian and Brazilian coin images. Class imbalance was handled with Albumentations data augmentation.
 - **Results:** the sequential CNN reaches **98.1% test accuracy** on the 5-class *Indian coins + fake coins* dataset (1,783 images), and 56.3% on the 4-class *Indian coins* dataset. VGG16 reaches 73.7% validation accuracy on *Indian coins*.
 - **Credit:** the sequential CNN code is adapted from a public Kaggle notebook.
-- **Deployment:** a **Streamlit** app loads the trained model and classifies an uploaded image. The 194 MB weight file is published as a GitHub Release asset.
-- **Known issues:** the project is shown as submitted. A post-hoc code review found some issues: the VGG16 test evaluation used a shuffled generator, so its confusion matrix and 20.6% test accuracy compare misaligned labels. The validation and test splits of the sequential CNN may overlap. The 10-rupee augmentation was done before splitting. They are listed in *Écarts relevés*.
+- **Deployment:** a **Streamlit** app loads the trained model and classifies an uploaded image. The 194 MB weight file is published as a GitHub Release asset. Since 2026 the app runs on current TensorFlow (2.16+): the unmaintained `tensorflow-addons` dependency was replaced by Keras' F1 metric.
+- **Known issues:** the project is shown as submitted. A post-hoc code review found some issues: the VGG16 test evaluation used a shuffled generator, so its confusion matrix and 20.6% test accuracy compare misaligned labels. The validation and test splits of the sequential CNN may overlap. The 10-rupee augmentation was done before splitting. They are listed in *Écarts relevés*. A corrected VGG16 training and evaluation script (unshuffled test set) was added in 2026; the corrected test score requires re-running it on the project images.
 
 Datasets are not redistributed; see `data/README.md`.
