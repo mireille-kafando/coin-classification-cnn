@@ -92,13 +92,19 @@ def main():
     p.add_argument("--epoques", type=int, default=20)
     p.add_argument("--graine", type=int, default=2000)
     p.add_argument("--poids", default="imagenet", help="« imagenet » (par défaut) ou « aucun » pour un test rapide")
+    p.add_argument("--poids-classes", action="store_true",
+                   help="pondère la perte par l'inverse de la fréquence de chaque classe à l'entraînement")
     a = p.parse_args()
 
     keras.utils.set_random_seed(a.graine)
     a.sortie.mkdir(parents=True, exist_ok=True)
     entrainement, validation, test = generateurs(a.dossier, a.graine)
     modele = construire(entrainement.num_classes, None if a.poids == "aucun" else a.poids)
-    historique = modele.fit(entrainement, validation_data=validation, epochs=a.epoques,
+    ponderation = None
+    if a.poids_classes:
+        effectifs = np.bincount(entrainement.classes, minlength=entrainement.num_classes)
+        ponderation = {k: len(entrainement.classes) / (entrainement.num_classes * n) for k, n in enumerate(effectifs)}
+    historique = modele.fit(entrainement, validation_data=validation, epochs=a.epoques, class_weight=ponderation,
                             steps_per_epoch=min(20, len(entrainement)),
                             validation_steps=min(10, len(validation))).history
 
@@ -110,6 +116,10 @@ def main():
     y_pred = probabilites.argmax(axis=1)
     y_vrai = test.classes  # même ordre que les prédictions grâce à shuffle=False
     noms = list(test.class_indices)
+    with open(a.sortie / "predictions_test.csv", "w") as f:  # une ligne par image, pour comparer des variantes
+        f.write("fichier,vrai,predit\n")
+        for fichier, v, q in zip(test.filenames, y_vrai, y_pred):
+            f.write(f"{fichier},{noms[v]},{noms[q]}\n")
     ConfusionMatrixDisplay(confusion_matrix(y_vrai, y_pred), display_labels=noms).plot(values_format="d")
     plt.savefig(a.sortie / "vgg16_matrice_confusion_test.png", dpi=120, bbox_inches="tight")
     # Démonstration du défaut du notebook : même modèle, test mélangé comparé aux étiquettes dans l'ordre
@@ -120,6 +130,7 @@ def main():
     resultats = {
         "exactitude_test": float(accuracy_score(y_vrai, y_pred)),
         "exactitude_test_methode_du_notebook": exactitude_melangee,
+        "ponderation_des_classes": ponderation,
         "exactitude_equilibree_test": float(balanced_accuracy_score(y_vrai, y_pred)),
         "rapport": classification_report(y_vrai, y_pred, target_names=noms, output_dict=True, zero_division=0),
         "evaluation_validation": dict(zip(modele.metrics_names, map(lambda v: np.asarray(v).tolist(),

@@ -1,0 +1,49 @@
+{
+ "exactitude_test": 0.6583333333333333,
+ "exactitude_test_methode_du_notebook": 0.275,
+ "ponderation_des_classes": null,
+ "exactitude_equilibree_test": 0.6583333333333333,
+ "rapport": {
+  "rupee_1": {
+   "precision": 0.48717948717948717,
+   "recall": 0.6333333333333333,
+   "f1-score": 0.5507246376811594,
+   "support": 30.0
+  },
+  "rupee_10": {
+   "precision": 0.9666666666666667,
+   "recall": 0.9666666666666667,
+   "f1-score": 0.9666666666666667,
+   "support": 30.0
+  },
+  "rupee_2": {
+   "precision": 0.6666666666666666,
+   "recall": 0.13333333333333333,
+   "f1-score": 0.2222222222222222,
+   "support": 30.0
+  },
+  "rupee_5": {
+   "precision": 0.6,
+   "recall": 0.9,
+   "f1-score": 0.72,
+   "support": 30.0
+  },
+  "accuracy": 0.6583333333333333,
+  "macro avg": {
+   "precision": 0.6801282051282052,
+   "recall": 0.6583333333333333,
+   "f1-score": 0.614903381642512,
+   "support": 120.0
+  },
+  "weighted avg": {
+   "precision": 0.6801282051282052,
+   "recall": 0.6583333333333333,
+   "f1-score": 0.614903381642512,
+   "support": 120.0
+  }
+ },
+ "evaluation_validation": {
+  "loss": 0.8099991083145142,
+  "compile_metrics": 0.7402597665786743
+ }
+}

@@ -11,29 +11,43 @@ classe, une pièce tirée au hasard (graine 2026) va au test, une autre à la va
 l'entraînement. Ainsi, le test mesure la reconnaissance de pièces jamais vues, et non de photos
 presque identiques à celles de l'entraînement.
 
+Options :
+- --recadrer : chaque photo est recadrée sur la pièce, à 256 x 256 sur fond noir (scripts/recadrage.py),
+  pour ressembler aux gros plans du jeu « Indian coins + fake coins » ;
+- --complement <dossier> : images de 2 roupies d'un autre jeu, ajoutées à l'entraînement seulement
+  (préfixe « externe_ ») ; la validation et le test restent 100 % ICDD ;
+- --pli k : validation croisée par pièce. Après le tirage, la pièce n° k de chaque classe va au test et
+  la suivante à la validation (pli 0 = partage par défaut). Avec 4 plis, chacune des 4 pièces de
+  2 roupies passe une fois au test.
+
 Usage :
-    python scripts/preparer_icdd.py <dossier ICDD réduit> <dossier de sortie>
+    python scripts/preparer_icdd.py <dossier ICDD réduit> <dossier de sortie> [--recadrer] [--complement <dossier>] [--pli k]
 <dossier ICDD réduit> contient <Classe>/<Coin_k>/<Éclairage>/<image>.jpg (One, Two, Five, Ten).
 Écrit <sortie>/{train,val,test}/rupee_*/ et <sortie>/partage_icdd.json.
 """
+import argparse
 import json
 import random
 import shutil
-import sys
 from pathlib import Path
+
+from PIL import Image
+
+from recadrage import recadrer
 
 CLASSES = {"One": "rupee_1", "Two": "rupee_2", "Five": "rupee_5", "Ten": "rupee_10"}
 GRAINE = 2026
 
 
-def main(source: Path, sortie: Path):
+def main(source: Path, sortie: Path, recadrage=False, complement=None, pli=0):
     rng = random.Random(GRAINE)
     partage = {}
     for dossier, classe in CLASSES.items():
         pieces = sorted(p.name for p in (source / dossier).iterdir() if p.is_dir())
         tirage = pieces[:]
         rng.shuffle(tirage)
-        affectation = {"test": [tirage[0]], "val": [tirage[1]], "train": sorted(tirage[2:])}
+        test, val = tirage[pli % len(tirage)], tirage[(pli + 1) % len(tirage)]
+        affectation = {"test": [test], "val": [val], "train": sorted(set(tirage) - {test, val})}
         partage[classe] = affectation
         for ensemble, liste in affectation.items():
             cible = sortie / ensemble / classe
@@ -41,13 +55,28 @@ def main(source: Path, sortie: Path):
             for piece in liste:
                 for image in sorted((source / dossier / piece).rglob("*.jpg")):
                     eclairage = image.parent.name
-                    shutil.copy(image, cible / f"{piece}_{eclairage}_{image.name}")
+                    destination = cible / f"{piece}_{eclairage}_{image.name}"
+                    if recadrage:
+                        recadrer(Image.open(image)).save(destination, quality=92)
+                    else:
+                        shutil.copy(image, destination)
+    if complement:
+        for image in sorted(Path(complement).glob("*.jpg")):
+            shutil.copy(image, sortie / "train" / "rupee_2" / f"externe_{image.name}")
     comptes = {e: {c: len(list((sortie / e / c).glob("*.jpg"))) for c in CLASSES.values()}
                for e in ("train", "val", "test")}
     (sortie / "partage_icdd.json").write_text(json.dumps(
-        {"graine": GRAINE, "pieces": partage, "images": comptes}, indent=1, ensure_ascii=False))
+        {"graine": GRAINE, "pli": pli, "recadrage": recadrage, "complement_rupee_2": str(complement) if complement else None,
+         "pieces": partage, "images": comptes}, indent=1, ensure_ascii=False))
     print(json.dumps(comptes, indent=1))
 
 
 if __name__ == "__main__":
-    main(Path(sys.argv[1]), Path(sys.argv[2]))
+    p = argparse.ArgumentParser()
+    p.add_argument("source", type=Path)
+    p.add_argument("sortie", type=Path)
+    p.add_argument("--recadrer", action="store_true")
+    p.add_argument("--complement", type=Path)
+    p.add_argument("--pli", type=int, default=0)
+    a = p.parse_args()
+    main(a.source, a.sortie, a.recadrer, a.complement, a.pli)

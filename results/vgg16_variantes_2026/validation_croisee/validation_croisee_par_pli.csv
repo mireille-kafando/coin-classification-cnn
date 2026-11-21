@@ -1,0 +1,13 @@
+variante,pli,exactitude,rappel_rupee_2
+R0_brut,0,0.6,0.0
+R0_brut,1,0.567,0.0
+R0_brut,2,0.6,0.0
+R0_brut,3,0.592,0.0
+R2_brut_complement,0,0.692,0.0
+R2_brut_complement,1,0.592,0.033
+R2_brut_complement,2,0.658,0.133
+R2_brut_complement,3,0.642,0.2
+R4_recadre_complement,0,0.633,0.2
+R4_recadre_complement,1,0.767,0.533
+R4_recadre_complement,2,0.642,0.0
+R4_recadre_complement,3,0.65,0.067

@@ -1,0 +1,86 @@
+{
+ "graine": 2026,
+ "pli": 3,
+ "recadrage": false,
+ "complement_rupee_2": null,
+ "pieces": {
+  "rupee_1": {
+   "test": [
+    "Coin_7"
+   ],
+   "val": [
+    "Coin_5"
+   ],
+   "train": [
+    "Coin_1",
+    "Coin_2",
+    "Coin_3",
+    "Coin_4",
+    "Coin_6"
+   ]
+  },
+  "rupee_2": {
+   "test": [
+    "Coin_4"
+   ],
+   "val": [
+    "Coin_1"
+   ],
+   "train": [
+    "Coin_2",
+    "Coin_3"
+   ]
+  },
+  "rupee_5": {
+   "test": [
+    "Coin_3"
+   ],
+   "val": [
+    "Coin_6"
+   ],
+   "train": [
+    "Coin_1",
+    "Coin_2",
+    "Coin_4",
+    "Coin_5",
+    "Coin_7",
+    "Coin_8",
+    "Coin_9"
+   ]
+  },
+  "rupee_10": {
+   "test": [
+    "Coin_3"
+   ],
+   "val": [
+    "Coin_4"
+   ],
+   "train": [
+    "Coin_1",
+    "Coin_2",
+    "Coin_5",
+    "Coin_6"
+   ]
+  }
+ },
+ "images": {
+  "train": {
+   "rupee_1": 150,
+   "rupee_2": 60,
+   "rupee_5": 210,
+   "rupee_10": 120
+  },
+  "val": {
+   "rupee_1": 30,
+   "rupee_2": 30,
+   "rupee_5": 30,
+   "rupee_10": 30
+  },
+  "test": {
+   "rupee_1": 30,
+   "rupee_2": 30,
+   "rupee_5": 30,
+   "rupee_10": 30
+  }
+ }
+}

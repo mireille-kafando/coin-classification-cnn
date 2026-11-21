@@ -1,0 +1,4 @@
+variante,images,exactitude,exactitude_min_pli,exactitude_max_pli,exactitude_equilibree,rappel_rupee_1,rappel_rupee_2,rappel_rupee_5,rappel_rupee_10,b_ref_juste_variante_fausse,c_ref_faux_variante_juste,mcnemar_p
+R0_brut,480,0.59,0.567,0.6,0.59,0.658,0.0,0.9,0.8,,,
+R2_brut_complement,480,0.646,0.592,0.692,0.646,0.65,0.092,0.875,0.967,11.0,38.0,0.0001
+R4_recadre_complement,480,0.673,0.633,0.767,0.673,0.8,0.2,0.692,1.0,53.0,93.0,0.0012
