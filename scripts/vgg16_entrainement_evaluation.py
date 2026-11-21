@@ -112,8 +112,14 @@ def main():
     noms = list(test.class_indices)
     ConfusionMatrixDisplay(confusion_matrix(y_vrai, y_pred), display_labels=noms).plot(values_format="d")
     plt.savefig(a.sortie / "vgg16_matrice_confusion_test.png", dpi=120, bbox_inches="tight")
+    # Démonstration du défaut du notebook : même modèle, test mélangé comparé aux étiquettes dans l'ordre
+    melange = ImageDataGenerator(preprocessing_function=resize_and_rescale).flow_from_directory(
+        str(a.dossier / "test"), target_size=tuple(IMG_SIZE), batch_size=10, class_mode="categorical",
+        shuffle=True, seed=a.graine)
+    exactitude_melangee = float(accuracy_score(melange.classes, modele.predict(melange).argmax(axis=1)))
     resultats = {
         "exactitude_test": float(accuracy_score(y_vrai, y_pred)),
+        "exactitude_test_methode_du_notebook": exactitude_melangee,
         "exactitude_equilibree_test": float(balanced_accuracy_score(y_vrai, y_pred)),
         "rapport": classification_report(y_vrai, y_pred, target_names=noms, output_dict=True, zero_division=0),
         "evaluation_validation": dict(zip(modele.metrics_names, map(lambda v: np.asarray(v).tolist(),
@@ -122,6 +128,7 @@ def main():
     (a.sortie / "resultats_test.json").write_text(json.dumps(resultats, indent=1, ensure_ascii=False))
     print(classification_report(y_vrai, y_pred, target_names=noms, zero_division=0))
     print(f"Exactitude sur le test : {resultats['exactitude_test']:.3f}")
+    print(f"Avec l'évaluation du notebook (test mélangé) : {exactitude_melangee:.3f}")
 
 
 if __name__ == "__main__":
